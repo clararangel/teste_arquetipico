@@ -1,30 +1,133 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { calculateResult } from "@/lib/scoring";
-import {
-  Answer,
-  Result,
-  likertOptions,
-  questions
-} from "@/lib/quiz-data";
+import { Answer, Result, likertOptions, questions } from "@/lib/quiz-data";
 
-type QuizStage = "landing" | "quiz" | "result";
+type FlowStep = "intro" | "instructions" | "lead" | "quiz" | "result";
+
+type LeadFieldId =
+  | "fullName"
+  | "email"
+  | "phone"
+  | "birthDate"
+  | "gender"
+  | "area"
+  | "income";
+
+type LeadData = Record<LeadFieldId, string>;
+
+type LeadField = {
+  id: LeadFieldId;
+  label: string;
+  type: "text" | "email" | "tel" | "date" | "options";
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+};
 
 type StoredQuizState = {
-  stage: QuizStage;
+  step: FlowStep;
+  leadStepIndex: number;
   currentQuestionIndex: number;
+  leadData: LeadData;
   answers: Answer;
+  result?: Result | null;
 };
 
 const STORAGE_KEY = "teste-dos-arquetipos-clara-rangel";
 
+const initialLeadData: LeadData = {
+  fullName: "",
+  email: "",
+  phone: "",
+  birthDate: "",
+  gender: "",
+  area: "",
+  income: ""
+};
+
+const leadFields: LeadField[] = [
+  {
+    id: "fullName",
+    label: "Nome completo",
+    type: "text",
+    placeholder: "Digite seu nome completo"
+  },
+  {
+    id: "email",
+    label: "Endereço de e-mail",
+    type: "email",
+    placeholder: "seuemail@exemplo.com"
+  },
+  {
+    id: "phone",
+    label: "Telefone",
+    type: "tel",
+    placeholder: "(00) 00000-0000"
+  },
+  {
+    id: "birthDate",
+    label: "Data de nascimento",
+    type: "date"
+  },
+  {
+    id: "gender",
+    label: "Gênero",
+    type: "options",
+    options: [
+      { value: "Feminino", label: "A — Feminino" },
+      { value: "Masculino", label: "B — Masculino" },
+      { value: "Outro", label: "C — Outro" }
+    ]
+  },
+  {
+    id: "area",
+    label: "Área de atuação",
+    type: "text",
+    placeholder: "Ex.: mentoria, estética, educação, consultoria"
+  },
+  {
+    id: "income",
+    label: "Renda mensal",
+    type: "options",
+    options: [
+      { value: "De R$1 mil a R$3 mil", label: "A — De R$1 mil a R$3 mil" },
+      { value: "De R$3 mil a R$10 mil", label: "B — De R$3 mil a R$10 mil" },
+      { value: "De R$10 mil a R$50 mil", label: "C — De R$10 mil a R$50 mil" },
+      { value: "De R$50 mil a R$200 mil", label: "D — De R$50 mil a R$200 mil" },
+      {
+        value: "De R$200 mil a R$1 milhão",
+        label: "E — De R$200 mil a R$1 milhão"
+      },
+      { value: "Mais de R$1 milhão", label: "F — Mais de R$1 milhão" }
+    ]
+  }
+];
+
 export function ArchetypeQuiz() {
-  const [stage, setStage] = useState<QuizStage>("landing");
+  const [step, setStep] = useState<FlowStep>("intro");
+  const [leadStepIndex, setLeadStepIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [leadData, setLeadData] = useState<LeadData>(initialLeadData);
   const [answers, setAnswers] = useState<Answer>({});
   const [isLoaded, setIsLoaded] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
   const [shareStatus, setShareStatus] = useState("");
+  const advanceTimer = useRef<number | null>(null);
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const selectedValue = answers[currentQuestion.id];
+  const answeredCount = Object.keys(answers).length;
+  const result = useMemo<Result>(() => calculateResult(answers), [answers]);
+  const currentLeadField = leadFields[leadStepIndex];
+  const currentLeadValue = leadData[currentLeadField.id];
+  const progressPercentage = getProgressPercentage({
+    step,
+    leadStepIndex,
+    currentQuestionIndex,
+    selectedValue
+  });
+  const progressLabel = getProgressLabel(step, leadStepIndex, currentQuestionIndex);
 
   useEffect(() => {
     const storedState = window.localStorage.getItem(STORAGE_KEY);
@@ -33,13 +136,15 @@ export function ArchetypeQuiz() {
       try {
         const parsedState = JSON.parse(storedState) as StoredQuizState;
 
-        if (parsedState.answers && parsedState.stage) {
-          setStage(parsedState.stage);
-          setAnswers(parsedState.answers);
-          setCurrentQuestionIndex(
-            Math.min(parsedState.currentQuestionIndex ?? 0, questions.length - 1)
-          );
-        }
+        setStep(parsedState.step ?? "intro");
+        setLeadStepIndex(
+          Math.min(parsedState.leadStepIndex ?? 0, leadFields.length - 1)
+        );
+        setCurrentQuestionIndex(
+          Math.min(parsedState.currentQuestionIndex ?? 0, questions.length - 1)
+        );
+        setLeadData({ ...initialLeadData, ...(parsedState.leadData ?? {}) });
+        setAnswers(parsedState.answers ?? {});
       } catch {
         window.localStorage.removeItem(STORAGE_KEY);
       }
@@ -54,25 +159,113 @@ export function ArchetypeQuiz() {
     }
 
     const stateToStore: StoredQuizState = {
-      stage,
+      step,
+      leadStepIndex,
       currentQuestionIndex,
-      answers
+      leadData,
+      answers,
+      result: step === "result" ? result : null
     };
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToStore));
-  }, [answers, currentQuestionIndex, isLoaded, stage]);
+  }, [
+    answers,
+    currentQuestionIndex,
+    isLoaded,
+    leadData,
+    leadStepIndex,
+    result,
+    step
+  ]);
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const answeredCount = Object.keys(answers).length;
-  const progressPercentage =
-    ((currentQuestionIndex + 1) / questions.length) * 100;
-  const result = useMemo<Result>(() => calculateResult(answers), [answers]);
-  const selectedValue = answers[currentQuestion.id];
+  useEffect(() => {
+    return () => {
+      if (advanceTimer.current) {
+        window.clearTimeout(advanceTimer.current);
+      }
+    };
+  }, []);
 
-  function beginQuiz() {
-    setStage("quiz");
-    setCurrentQuestionIndex(0);
+  function clearAutoAdvance() {
+    if (advanceTimer.current) {
+      window.clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  }
+
+  function goToStep(nextStep: FlowStep) {
+    clearAutoAdvance();
+    setStep(nextStep);
+    setValidationMessage("");
     setShareStatus("");
+  }
+
+  function goBack() {
+    clearAutoAdvance();
+    setValidationMessage("");
+    setShareStatus("");
+
+    if (step === "instructions") {
+      setStep("intro");
+      return;
+    }
+
+    if (step === "lead") {
+      if (leadStepIndex > 0) {
+        setLeadStepIndex((index) => index - 1);
+        return;
+      }
+
+      setStep("instructions");
+      return;
+    }
+
+    if (step === "quiz") {
+      if (currentQuestionIndex > 0) {
+        setCurrentQuestionIndex((index) => index - 1);
+        return;
+      }
+
+      setStep("lead");
+      setLeadStepIndex(leadFields.length - 1);
+      return;
+    }
+
+    if (step === "result") {
+      setStep("quiz");
+      setCurrentQuestionIndex(questions.length - 1);
+    }
+  }
+
+  function handleLeadChange(value: string) {
+    setLeadData((currentData) => ({
+      ...currentData,
+      [currentLeadField.id]: value
+    }));
+    setValidationMessage("");
+  }
+
+  function continueLeadForm() {
+    if (!isLeadFieldValid(currentLeadField, currentLeadValue)) {
+      setValidationMessage("Preencha este campo para continuar.");
+      return;
+    }
+
+    // TODO: conectar aqui uma integração futura com CRM, webhook, Google Sheets, Tally ou email marketing.
+    if (leadStepIndex === leadFields.length - 1) {
+      setStep("quiz");
+      setCurrentQuestionIndex(0);
+      setValidationMessage("");
+      return;
+    }
+
+    setLeadStepIndex((index) => index + 1);
+    setValidationMessage("");
+  }
+
+  function handleLeadSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    continueLeadForm();
   }
 
   function selectAnswer(value: number) {
@@ -80,43 +273,58 @@ export function ArchetypeQuiz() {
       ...currentAnswers,
       [currentQuestion.id]: value
     }));
-  }
 
-  function goToPreviousQuestion() {
-    setCurrentQuestionIndex((index) => Math.max(index - 1, 0));
-    setShareStatus("");
+    clearAutoAdvance();
+
+    advanceTimer.current = window.setTimeout(() => {
+      advanceTimer.current = null;
+
+      if (currentQuestionIndex === questions.length - 1) {
+        setStep("result");
+        setShareStatus("");
+        return;
+      }
+
+      setCurrentQuestionIndex((index) => Math.min(index + 1, questions.length - 1));
+    }, 250);
   }
 
   function goToNextQuestion() {
+    if (selectedValue === undefined) {
+      return;
+    }
+
+    clearAutoAdvance();
+
     if (currentQuestionIndex === questions.length - 1) {
-      setStage("result");
+      setStep("result");
       setShareStatus("");
-      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     setCurrentQuestionIndex((index) => index + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function restartQuiz() {
-    const cleanAnswers: Answer = {};
-
-    setAnswers(cleanAnswers);
+  function restartFromBeginning() {
+    clearAutoAdvance();
+    setStep("intro");
+    setLeadStepIndex(0);
     setCurrentQuestionIndex(0);
-    setStage("quiz");
+    setLeadData(initialLeadData);
+    setAnswers({});
+    setValidationMessage("");
     setShareStatus("");
     window.localStorage.removeItem(STORAGE_KEY);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function shareResult() {
-    const shareText = `Meu arquétipo dominante no Teste dos Arquétipos é ${result.dominant.archetype.name}. Secundário: ${result.secondary.archetype.name}. Terciário: ${result.tertiary.archetype.name}.`;
+    const firstName = getFirstName(leadData.fullName);
+    const shareText = `${firstName ? `${firstName}, ` : ""}meu arquétipo principal no Teste de Arquétipo é ${result.dominant.archetype.name}. Secundário: ${result.secondary.archetype.name}. Terciário: ${result.tertiary.archetype.name}.`;
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "Meu resultado no Teste dos Arquétipos",
+          title: "Meu resultado no Teste de Arquétipo",
           text: shareText,
           url: window.location.href
         });
@@ -131,170 +339,283 @@ export function ArchetypeQuiz() {
     }
   }
 
-  if (stage === "quiz") {
-    return (
-      <main className="min-h-screen bg-ivory text-ink">
-        <QuizHeader answeredCount={answeredCount} />
+  const resultIsReady = answeredCount === questions.length;
+  const canGoBack = step !== "intro";
+  const canGoNext =
+    (step === "instructions" && true) ||
+    (step === "lead" && true) ||
+    (step === "quiz" && selectedValue !== undefined);
 
-        <section className="mx-auto flex w-full max-w-4xl flex-col px-5 pb-12 pt-6 md:px-8 md:pt-10">
-          <div className="mb-7 overflow-hidden rounded-full border border-marsala/15 bg-porcelain">
-            <div
-              className="h-2 rounded-full bg-marsala transition-all duration-500"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
+  return (
+    <div className="cinematic-shell">
+      <BackgroundImage />
+      <div className="cinematic-overlay" />
 
-          <article className="editorial-card animate-in">
-            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 text-sm text-coffee/75">
-              <span>
-                Questão {currentQuestionIndex + 1} de {questions.length}
-              </span>
-              <span className="rounded-full border border-bronze/25 px-3 py-1 text-bronze">
-                {currentQuestion.dimension}
-              </span>
-            </div>
+      <main className="cinematic-content">
+        {step === "intro" ? (
+          <IntroStep onStart={() => goToStep("instructions")} />
+        ) : null}
 
-            <h1 className="serif-title text-3xl leading-tight text-wine md:text-5xl">
-              {currentQuestion.statement}
+        {step === "instructions" ? (
+          <InstructionsStep onStart={() => goToStep("lead")} />
+        ) : null}
+
+        {step === "lead" ? (
+          <LeadStep
+            field={currentLeadField}
+            index={leadStepIndex}
+            onChange={handleLeadChange}
+            onContinue={continueLeadForm}
+            onSubmit={handleLeadSubmit}
+            validationMessage={validationMessage}
+            value={currentLeadValue}
+          />
+        ) : null}
+
+        {step === "quiz" ? (
+          <QuizStep
+            currentQuestionIndex={currentQuestionIndex}
+            onSelectAnswer={selectAnswer}
+            onSkipToNext={goToNextQuestion}
+            question={currentQuestion}
+            selectedValue={selectedValue}
+          />
+        ) : null}
+
+        {step === "result" && resultIsReady ? (
+          <ResultStep
+            leadData={leadData}
+            onRestart={restartFromBeginning}
+            onShare={shareResult}
+            result={result}
+            shareStatus={shareStatus}
+          />
+        ) : null}
+
+        {step === "result" && !resultIsReady ? (
+          <Panel className="max-w-2xl">
+            <p className="eyebrow">Resultado incompleto</p>
+            <h1 className="screen-title">
+              Responda todas as perguntas para revelar seu arquétipo.
             </h1>
-
-            <div className="mt-10 grid gap-3">
-              {likertOptions.map((option) => {
-                const isSelected = selectedValue === option.value;
-
-                return (
-                  <button
-                    className={`likert-option ${isSelected ? "is-selected" : ""}`}
-                    key={option.value}
-                    onClick={() => selectAnswer(option.value)}
-                    type="button"
-                  >
-                    <span className="likert-number">{option.value}</span>
-                    <span>{option.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                className="secondary-button"
-                disabled={currentQuestionIndex === 0}
-                onClick={goToPreviousQuestion}
-                type="button"
-              >
-                Anterior
-              </button>
-
-              <button
-                className="primary-button"
-                disabled={selectedValue === undefined}
-                onClick={goToNextQuestion}
-                type="button"
-              >
-                {currentQuestionIndex === questions.length - 1
-                  ? "Ver resultado"
-                  : "Próxima"}
-              </button>
-            </div>
-          </article>
-        </section>
-
-        <Footer />
+            <button
+              className="champagne-button mt-8"
+              onClick={() => {
+                setStep("quiz");
+                setCurrentQuestionIndex(Math.min(answeredCount, questions.length - 1));
+              }}
+              type="button"
+            >
+              Continuar teste
+            </button>
+          </Panel>
+        ) : null}
       </main>
-    );
-  }
 
-  if (stage === "result") {
-    return (
-      <main className="min-h-screen bg-porcelain text-ink">
-        <ResultView
-          onRestart={restartQuiz}
-          onShare={shareResult}
-          result={result}
-          shareStatus={shareStatus}
+      <BottomProgress
+        canGoBack={canGoBack}
+        canGoNext={canGoNext}
+        label={progressLabel}
+        onBack={goBack}
+        onNext={
+          step === "instructions"
+            ? () => goToStep("lead")
+            : step === "lead"
+              ? continueLeadForm
+              : goToNextQuestion
+        }
+        onRestart={restartFromBeginning}
+        percent={progressPercentage}
+        showRestart={step !== "intro"}
+        step={step}
+      />
+    </div>
+  );
+}
+
+function BackgroundImage() {
+  return (
+    <div className="background-frame" aria-hidden="true">
+      <picture>
+        <source media="(min-width: 768px)" srcSet="/images/hero-computer.png" />
+        <img
+          alt=""
+          className="background-image"
+          draggable={false}
+          src="/images/hero-mobile.png"
         />
-        <Footer />
-      </main>
-    );
-  }
-
-  return (
-    <main className="min-h-screen bg-ivory text-ink">
-      <LandingView onBegin={beginQuiz} />
-      <Footer />
-    </main>
+      </picture>
+    </div>
   );
 }
 
-function QuizHeader({ answeredCount }: { answeredCount: number }) {
+function IntroStep({ onStart }: { onStart: () => void }) {
   return (
-    <header className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-6 md:px-8">
-      <div>
-        <p className="text-xs uppercase text-bronze">Diagnóstico gratuito</p>
-        <p className="serif-title mt-1 text-2xl text-wine">
-          Teste dos Arquétipos
-        </p>
-      </div>
-
-      <p className="rounded-full border border-marsala/15 bg-porcelain px-4 py-2 text-sm text-coffee">
-        {answeredCount}/{questions.length} respostas
-      </p>
-    </header>
-  );
-}
-
-function LandingView({ onBegin }: { onBegin: () => void }) {
-  return (
-    <section className="hero-shell">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-between px-5 py-7 md:px-8 md:py-10">
-        <header className="flex flex-wrap items-center justify-between gap-4 text-sm text-porcelain/80">
-          <span>Clara Rangel</span>
-          <span>Arquétipos e posicionamento</span>
-        </header>
-
-        <div className="max-w-4xl py-16 md:py-20">
-          <p className="mb-6 text-sm uppercase text-bronze">
-            Diagnóstico estratégico gratuito
-          </p>
-
-          <h1 className="serif-title max-w-3xl text-5xl leading-none text-porcelain md:text-7xl">
-            Teste de Arquétipo
-          </h1>
-
-          <p className="mt-7 max-w-2xl text-xl leading-8 text-porcelain/90 md:text-2xl">
-            Descubra qual arquétipo guia a sua marca, sua comunicação e sua
-            forma de gerar desejo.
-          </p>
-
-          <p className="mt-5 max-w-2xl text-base leading-7 text-porcelain/75">
-            Desenvolvido por Clara Rangel — especialista em arquétipos e
-            posicionamento.
-          </p>
-
-          <button className="hero-button mt-9" onClick={onBegin} type="button">
-            Começar teste
-          </button>
-        </div>
-
-        <div className="landing-note">
-          <p>
-            Este teste analisa padrões de comportamento, comunicação, desejo,
-            decisão e posicionamento para identificar seu arquétipo dominante,
-            secundário e terciário.
-          </p>
-        </div>
+    <section className="intro-placement">
+      <div className="intro-actions">
+        <p className="intro-label">Desenvolvido por Clara Rangel</p>
+        <button className="champagne-button" onClick={onStart} type="button">
+          Começar teste gratuito
+        </button>
       </div>
     </section>
   );
 }
 
-function ResultView({
+function InstructionsStep({ onStart }: { onStart: () => void }) {
+  return (
+    <Panel className="max-w-3xl">
+      <p className="eyebrow">Antes de começar</p>
+      <h1 className="screen-title">
+        Responda com sinceridade o quanto cada afirmação representa você, sua
+        marca e sua forma de se posicionar.
+      </h1>
+
+      <div className="scale-grid mt-8">
+        {likertOptions.map((option) => (
+          <div className="scale-item" key={option.value}>
+            <span>{option.value}</span>
+            <p>{option.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <button className="champagne-button mt-7" onClick={onStart} type="button">
+        Iniciar o seu teste
+      </button>
+    </Panel>
+  );
+}
+
+function LeadStep({
+  field,
+  index,
+  onChange,
+  onContinue,
+  onSubmit,
+  validationMessage,
+  value
+}: {
+  field: LeadField;
+  index: number;
+  onChange: (value: string) => void;
+  onContinue: () => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  validationMessage: string;
+  value: string;
+}) {
+  return (
+    <Panel className="max-w-3xl">
+      <p className="eyebrow">
+        Dados iniciais {index + 1} de {leadFields.length}
+      </p>
+
+      <form onSubmit={onSubmit}>
+        <label className="field-label" htmlFor={field.id}>
+          {field.label}
+        </label>
+
+        {field.type === "options" ? (
+          <div className="choice-list" id={field.id}>
+            {field.options?.map((option) => (
+              <button
+                className={`choice-option ${value === option.value ? "is-selected" : ""}`}
+                key={option.value}
+                onClick={() => onChange(option.value)}
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <input
+            autoComplete={getAutocomplete(field.id)}
+            autoFocus
+            className="lead-input"
+            id={field.id}
+            onChange={(event) => onChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                onContinue();
+              }
+            }}
+            placeholder={field.placeholder}
+            required
+            type={field.type}
+            value={value}
+          />
+        )}
+
+        {validationMessage ? (
+          <p className="validation-message" role="alert">
+            {validationMessage}
+          </p>
+        ) : null}
+
+        <button className="champagne-button mt-8" type="submit">
+          Continuar
+        </button>
+      </form>
+    </Panel>
+  );
+}
+
+function QuizStep({
+  currentQuestionIndex,
+  onSelectAnswer,
+  onSkipToNext,
+  question,
+  selectedValue
+}: {
+  currentQuestionIndex: number;
+  onSelectAnswer: (value: number) => void;
+  onSkipToNext: () => void;
+  question: (typeof questions)[number];
+  selectedValue?: number;
+}) {
+  return (
+    <Panel className="max-w-4xl">
+      <p className="eyebrow">
+        Pergunta {currentQuestionIndex + 1} de {questions.length}
+      </p>
+      <h1 className="screen-title">{question.statement}</h1>
+
+      <div className="answer-grid mt-9">
+        {likertOptions.map((option) => (
+          <button
+            className={`answer-option ${selectedValue === option.value ? "is-selected" : ""}`}
+            key={option.value}
+            onClick={() => onSelectAnswer(option.value)}
+            type="button"
+          >
+            <span>{option.value}</span>
+            <p>{option.label}</p>
+          </button>
+        ))}
+      </div>
+
+      <button
+        className="ghost-button mt-7"
+        disabled={selectedValue === undefined}
+        onClick={onSkipToNext}
+        type="button"
+      >
+        Avançar
+      </button>
+    </Panel>
+  );
+}
+
+function ResultStep({
+  leadData,
   onRestart,
   onShare,
   result,
   shareStatus
 }: {
+  leadData: LeadData;
   onRestart: () => void;
   onShare: () => void;
   result: Result;
@@ -303,112 +624,97 @@ function ResultView({
   const dominant = result.dominant.archetype;
   const secondary = result.secondary.archetype;
   const tertiary = result.tertiary.archetype;
+  const firstName = getFirstName(leadData.fullName);
+  const tallyUrl = buildTallyUrl(leadData, result);
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8 md:py-16">
-      <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-sm uppercase text-bronze">
-            Resultado do diagnóstico
-          </p>
-          <h1 className="serif-title mt-3 max-w-4xl text-4xl leading-tight text-wine md:text-6xl">
-            Seu arquétipo dominante é: {dominant.name}
-          </h1>
-        </div>
+    <section className="result-shell">
+      <Panel className="result-panel">
+        <p className="eyebrow">Seu resultado</p>
+        <h1 className="screen-title">
+          {firstName ? `${firstName}, ` : ""}seu arquétipo principal é:{" "}
+          {dominant.name}
+        </h1>
+        <p className="result-intro">{dominant.shortDescription}</p>
 
-        <a
-          className="primary-button"
-          href="https://www.instagram.com/clararangelmkt"
-          rel="noreferrer"
-          target="_blank"
-        >
-          Falar com Clara sobre meu posicionamento
-        </a>
-      </div>
-
-      <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-        <article className="editorial-card animate-in">
-          <p className="mb-8 text-lg leading-8 text-coffee">
-            {dominant.shortDescription}
-          </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <ResultPill
-              label="Arquétipo secundário"
-              name={secondary.name}
-              score={result.secondary.score}
-            />
-            <ResultPill
-              label="Arquétipo terciário"
-              name={tertiary.name}
-              score={result.tertiary.score}
-            />
-          </div>
-
-          <div className="mt-9 border-t border-marsala/10 pt-8">
-            <h2 className="serif-title text-3xl text-wine">
-              Combinação estratégica
-            </h2>
-            <p className="mt-4 leading-8 text-coffee">
-              {result.strategicCombination}
-            </p>
-          </div>
-        </article>
-
-        <aside className="space-y-4">
-          <ResultBlock title="Essência" text={dominant.essence} />
-          <ResultBlock title="Força de marca" text={dominant.brandStrength} />
-          <ResultBlock
-            title="Estilo de comunicação"
-            text={dominant.communicationStyle}
+        <div className="result-cards">
+          <ResultCard
+            label="Arquétipo principal"
+            name={dominant.name}
+            score={result.dominant.score}
           />
-        </aside>
-      </div>
-
-      <div className="mt-5 grid gap-5 md:grid-cols-3">
-        <ResultBlock title="Direção de conteúdo" text={dominant.contentDirection} />
-        <ResultBlock title="Ponto de atenção" text={dominant.pointOfAttention} />
-        <ResultBlock
-          title="Como esse arquétipo pode aparecer na sua marca pessoal"
-          text={dominant.positioningAdvice}
-        />
-      </div>
-
-      <section className="mt-8 rounded-[8px] border border-marsala/10 bg-ivory/70 p-5 md:p-7">
-        <h2 className="serif-title text-2xl text-wine">
-          Leitura dos 12 arquétipos
-        </h2>
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
-          {result.ranking.map((item) => (
-            <div
-              className="flex items-center justify-between gap-4 border-b border-marsala/10 py-3 last:border-b-0"
-              key={item.archetype.id}
-            >
-              <span className="text-coffee">{item.archetype.name}</span>
-              <span className="font-medium text-wine">{item.score} pontos</span>
-            </div>
-          ))}
+          <ResultCard
+            label="Arquétipo secundário"
+            name={secondary.name}
+            score={result.secondary.score}
+          />
+          <ResultCard
+            label="Arquétipo terciário"
+            name={tertiary.name}
+            score={result.tertiary.score}
+          />
         </div>
-      </section>
 
-      <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <button className="primary-button" onClick={onShare} type="button">
-          Compartilhar resultado
-        </button>
-        <button className="secondary-button" onClick={onRestart} type="button">
-          Refazer teste
-        </button>
-        {shareStatus ? (
-          <p className="text-sm text-coffee" role="status">
-            {shareStatus}
+        <ResultSection title="Combinação estratégica" text={result.strategicCombination} />
+        <ResultSection title="Estilo de comunicação" text={dominant.communicationStyle} />
+        <ResultSection title="Direção de conteúdo" text={dominant.contentDirection} />
+        <ResultSection
+          title="Direção de posicionamento"
+          text={dominant.positioningDirection}
+        />
+        <ResultSection title="Ponto de atenção" text={dominant.pointOfAttention} />
+        <ResultSection title="Próximo passo recomendado" text={dominant.nextStep} />
+
+        <div className="mentor-cta">
+          <h2>Quer uma mentoria individual e personalizada sobre o seu posicionamento arquetípico?</h2>
+          <p>
+            Seu resultado mostra uma direção, mas o próximo passo é transformar
+            isso em posicionamento, conteúdo, oferta e percepção de valor.
           </p>
-        ) : null}
-      </div>
+          <div className="cta-row">
+            <a className="champagne-button" href={tallyUrl} rel="noreferrer" target="_blank">
+              Quero minha mentoria personalizada
+            </a>
+            <a
+              className="outline-button"
+              href="https://www.instagram.com/clararangelmkt"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Falar com Clara no Instagram
+            </a>
+          </div>
+        </div>
+
+        <div className="result-actions">
+          <button className="outline-button" onClick={onShare} type="button">
+            Compartilhar resultado
+          </button>
+          <button className="ghost-button" onClick={onRestart} type="button">
+            Refazer teste
+          </button>
+          {shareStatus ? (
+            <p className="share-status" role="status">
+              {shareStatus}
+            </p>
+          ) : null}
+        </div>
+      </Panel>
     </section>
   );
 }
 
-function ResultPill({
+function Panel({
+  children,
+  className = ""
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <section className={`glass-panel ${className}`}>{children}</section>;
+}
+
+function ResultCard({
   label,
   name,
   score
@@ -418,27 +724,184 @@ function ResultPill({
   score: number;
 }) {
   return (
-    <div className="rounded-[8px] border border-bronze/25 bg-porcelain p-5">
-      <p className="text-sm uppercase text-bronze">{label}</p>
-      <p className="serif-title mt-2 text-3xl text-wine">{name}</p>
-      <p className="mt-2 text-sm text-coffee">{score} de 15 pontos</p>
-    </div>
-  );
-}
-
-function ResultBlock({ text, title }: { text: string; title: string }) {
-  return (
-    <article className="rounded-[8px] border border-marsala/10 bg-porcelain p-5 shadow-sm md:p-6">
-      <h2 className="serif-title text-2xl text-wine">{title}</h2>
-      <p className="mt-3 leading-7 text-coffee">{text}</p>
+    <article className="result-card">
+      <p>{label}</p>
+      <strong>{name}</strong>
+      <span>{score} de 15 pontos</span>
     </article>
   );
 }
 
-function Footer() {
+function ResultSection({ text, title }: { text: string; title: string }) {
   return (
-    <footer className="border-t border-marsala/10 px-5 py-6 text-center text-sm text-coffee/75 md:px-8">
-      Teste dos Arquétipos desenvolvido por Clara Rangel.
+    <article className="result-section">
+      <h2>{title}</h2>
+      <p>{text}</p>
+    </article>
+  );
+}
+
+function BottomProgress({
+  canGoBack,
+  canGoNext,
+  label,
+  onBack,
+  onNext,
+  onRestart,
+  percent,
+  showRestart,
+  step
+}: {
+  canGoBack: boolean;
+  canGoNext: boolean;
+  label: string;
+  onBack: () => void;
+  onNext: () => void;
+  onRestart: () => void;
+  percent: number;
+  showRestart: boolean;
+  step: FlowStep;
+}) {
+  return (
+    <footer className="bottom-progress">
+      <div className="progress-meta">
+        <span>{label}</span>
+        {showRestart ? (
+          <button className="restart-link" onClick={onRestart} type="button">
+            Voltar ao início
+          </button>
+        ) : null}
+      </div>
+
+      <div className="progress-track" aria-hidden="true">
+        <div className="progress-fill" style={{ width: `${percent}%` }} />
+      </div>
+
+      {step !== "intro" && step !== "result" ? (
+        <div className="progress-controls">
+          <button
+            aria-label="Voltar"
+            className="nav-button"
+            disabled={!canGoBack}
+            onClick={onBack}
+            type="button"
+          >
+            &lt;
+          </button>
+          <button
+            aria-label="Avançar"
+            className="nav-button"
+            disabled={!canGoNext}
+            onClick={onNext}
+            type="button"
+          >
+            &gt;
+          </button>
+        </div>
+      ) : null}
     </footer>
   );
+}
+
+function isLeadFieldValid(field: LeadField, value: string) {
+  const cleanValue = value.trim();
+
+  if (!cleanValue) {
+    return false;
+  }
+
+  if (field.type === "email") {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue);
+  }
+
+  if (field.type === "tel") {
+    return cleanValue.replace(/\D/g, "").length >= 8;
+  }
+
+  return true;
+}
+
+function getAutocomplete(fieldId: LeadFieldId) {
+  const autocompleteMap: Record<LeadFieldId, string> = {
+    fullName: "name",
+    email: "email",
+    phone: "tel",
+    birthDate: "bday",
+    gender: "off",
+    area: "organization-title",
+    income: "off"
+  };
+
+  return autocompleteMap[fieldId];
+}
+
+function getFirstName(fullName: string) {
+  return fullName.trim().split(" ").filter(Boolean)[0] ?? "";
+}
+
+function buildTallyUrl(leadData: LeadData, result: Result) {
+  const params = new URLSearchParams({
+    name: leadData.fullName,
+    email: leadData.email,
+    mainArchetype: result.dominant.archetype.name,
+    secondaryArchetype: result.secondary.archetype.name,
+    tertiaryArchetype: result.tertiary.archetype.name
+  });
+
+  return `https://tally.so/r/obANG1?${params.toString()}`;
+}
+
+function getProgressLabel(
+  step: FlowStep,
+  leadStepIndex: number,
+  currentQuestionIndex: number
+) {
+  if (step === "intro") {
+    return "Início";
+  }
+
+  if (step === "instructions") {
+    return "Instruções";
+  }
+
+  if (step === "lead") {
+    return `Dados ${leadStepIndex + 1} de ${leadFields.length}`;
+  }
+
+  if (step === "quiz") {
+    return `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+  }
+
+  return "Resultado completo";
+}
+
+function getProgressPercentage({
+  currentQuestionIndex,
+  leadStepIndex,
+  selectedValue,
+  step
+}: {
+  currentQuestionIndex: number;
+  leadStepIndex: number;
+  selectedValue?: number;
+  step: FlowStep;
+}) {
+  if (step === "intro") {
+    return 4;
+  }
+
+  if (step === "instructions") {
+    return 12;
+  }
+
+  if (step === "lead") {
+    return 18 + ((leadStepIndex + 1) / leadFields.length) * 24;
+  }
+
+  if (step === "quiz") {
+    const answeredOffset = selectedValue === undefined ? 0 : 1;
+    return 44 + ((currentQuestionIndex + answeredOffset) / questions.length) * 46;
+  }
+
+  return 100;
 }

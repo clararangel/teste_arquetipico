@@ -28,23 +28,16 @@ export type Archetype = {
   brandStrength: string;
   communicationStyle: string;
   contentDirection: string;
+  positioningDirection: string;
   pointOfAttention: string;
   positioningAdvice: string;
+  nextStep: string;
   shortDescription: string;
 };
-
-export type QuestionDimension =
-  | "comportamento"
-  | "decisao"
-  | "comunicacao"
-  | "atracao"
-  | "conteudo"
-  | "posicionamento";
 
 export type Question = {
   id: number;
   archetype: ArchetypeKey;
-  dimension: QuestionDimension;
   statement: string;
 };
 
@@ -83,206 +76,254 @@ export const archetypes: Record<ArchetypeKey, Archetype> = {
   inocente: {
     id: "inocente",
     name: "Inocente",
-    essence: "leveza, confiança, clareza e uma promessa de recomeço possível.",
+    essence: "clareza, leveza e confiança para simplificar escolhas.",
     brandStrength:
-      "Cria segurança emocional, simplifica decisões e faz a audiência sentir que existe um caminho mais puro, honesto e leve.",
+      "A marca transmite segurança emocional e faz a audiência sentir que existe um caminho mais leve, honesto e possível.",
     communicationStyle:
-      "Clara, positiva, acolhedora e sem excesso de complexidade. A marca fala com transparência e sustenta uma esperança concreta.",
+      "Clara, otimista, transparente e sem excesso de ruído. A mensagem precisa parecer limpa, confiável e fácil de entender.",
     contentDirection:
-      "Conteúdos sobre clareza, princípios, bastidores honestos, passos simples, escolhas conscientes e redução de ruído.",
+      "Conteúdos com passos simples, verdades honestas, bastidores leves, princípios da marca e escolhas que reduzem confusão.",
+    positioningDirection:
+      "Posicione a marca como uma guia para quem quer voltar ao essencial e decidir com mais paz, sem perder maturidade.",
     pointOfAttention:
-      "Evite parecer ingênua, superficial ou distante das dores reais do público. Leveza precisa vir acompanhada de prova e consistência.",
+      "Cuidado para não parecer ingênua ou rasa. Leveza precisa vir acompanhada de prova, consistência e presença estratégica.",
     positioningAdvice:
-      "Posicione sua marca como uma experiência de confiança e simplicidade refinada. Mostre que o caminho pode ser mais limpo sem ser raso.",
+      "Na marca pessoal, o Inocente aparece em uma estética limpa, uma fala direta e uma promessa de clareza real para a vida da cliente.",
+    nextStep:
+      "Transforme sua simplicidade em método: nomeie o processo, mostre evidências e deixe claro por que o caminho leve também é estratégico.",
     shortDescription:
-      "O Inocente conduz pela clareza e pela confiança. Sua marca tende a atrair quem busca simplicidade, honestidade e uma sensação de futuro mais leve."
+      "O Inocente revela uma marca que atrai pela confiança, pela clareza e pela sensação de que o caminho pode ser mais simples sem ser superficial."
   },
   explorador: {
     id: "explorador",
     name: "Explorador",
-    essence: "liberdade, autonomia, movimento e descoberta de novos territórios.",
+    essence: "liberdade, autonomia e coragem para abrir novos caminhos.",
     brandStrength:
-      "Estimula independência, coragem para experimentar e desejo de sair de fórmulas prontas.",
+      "A marca desperta movimento e atrai pessoas que desejam sair de fórmulas prontas para construir uma rota própria.",
     communicationStyle:
-      "Direta, expansiva, curiosa e provocadora na medida certa. A marca abre caminhos e convida a audiência a experimentar.",
+      "Direta, expansiva e curiosa. A fala precisa convidar a audiência a experimentar, testar e pensar além do padrão.",
     contentDirection:
-      "Conteúdos sobre liberdade de escolha, bastidores de experimentos, novas perspectivas, jornadas, transições e expansão de repertório.",
+      "Conteúdos sobre novas possibilidades, bastidores de descobertas, mudanças de rota, autonomia e decisões fora do piloto automático.",
+    positioningDirection:
+      "Posicione a marca como uma rota de expansão para quem quer liberdade com direção, repertório e responsabilidade.",
     pointOfAttention:
-      "Cuidado para não parecer dispersa, impaciente ou avessa a compromisso. A liberdade precisa de uma direção clara.",
+      "Cuidado com dispersão. A liberdade precisa de um território claro para não virar mensagem solta.",
     positioningAdvice:
-      "Use o Explorador para posicionar sua marca como uma rota de autonomia: menos dependência de modelos prontos, mais coragem para construir um caminho próprio.",
+      "Na marca pessoal, o Explorador aparece em narrativas de jornada, escolhas independentes e convites para a audiência expandir a própria visão.",
+    nextStep:
+      "Defina qual liberdade sua marca entrega e transforme essa promessa em uma trilha prática para a cliente seguir.",
     shortDescription:
-      "O Explorador move a marca pelo desejo de liberdade. Sua comunicação tende a atrair pessoas que querem autonomia, expansão e novos caminhos."
+      "O Explorador mostra uma marca movida por autonomia, descoberta e desejo de criar caminhos próprios."
   },
   sabio: {
     id: "sabio",
     name: "Sábio",
-    essence: "conhecimento profundo, método, discernimento e busca pela verdade.",
+    essence: "conhecimento, método e discernimento para tomar melhores decisões.",
     brandStrength:
-      "Constrói autoridade intelectual, reduz insegurança e transforma complexidade em compreensão estratégica.",
+      "A marca constrói autoridade com profundidade e ajuda a audiência a entender o que antes parecia confuso.",
     communicationStyle:
-      "Didática, precisa, analítica e elegante. A marca ensina sem infantilizar e sustenta suas ideias com método.",
+      "Didática, precisa, analítica e calma. A fala deve ensinar sem complicar e sustentar ideias com lógica.",
     contentDirection:
-      "Conteúdos educativos, análises, frameworks, diagnósticos, estudos de caso, conceitos e explicações que elevam a consciência do público.",
+      "Conteúdos educativos, análises, frameworks, estudos de caso, conceitos explicados e diagnósticos claros.",
+    positioningDirection:
+      "Posicione a marca como referência intelectual que organiza o pensamento e transforma informação em decisão.",
     pointOfAttention:
-      "Evite excesso de teoria, frieza ou distanciamento emocional. Conhecimento precisa se conectar com desejo, contexto e decisão.",
+      "Cuidado para não virar só teoria. O conhecimento precisa tocar desejo, contexto e aplicação prática.",
     positioningAdvice:
-      "Assuma uma autoridade calma. Mostre profundidade, mas traduza seu saber em orientação aplicável para quem precisa decidir melhor.",
+      "Na marca pessoal, o Sábio aparece em aulas, análises, mapas mentais, opiniões bem fundamentadas e clareza de método.",
+    nextStep:
+      "Crie uma assinatura metodológica. Sua autoridade cresce quando a audiência entende como você pensa e por que isso gera resultado.",
     shortDescription:
-      "O Sábio guia pela clareza intelectual. Sua marca tende a ganhar valor quando transforma conhecimento em direção, método e autoridade."
+      "O Sábio revela uma marca que lidera pela clareza intelectual, pela profundidade e pela capacidade de orientar decisões."
   },
   heroi: {
     id: "heroi",
     name: "Herói",
-    essence: "conquista, coragem, superação, disciplina e evolução visível.",
+    essence: "coragem, superação e ação para conquistar resultados.",
     brandStrength:
-      "Mobiliza ação, energia de progresso e senso de capacidade. A audiência sente que pode vencer limites concretos.",
+      "A marca ativa energia de movimento e faz a audiência sentir que é capaz de vencer limites concretos.",
     communicationStyle:
-      "Firme, objetiva, energizante e orientada a metas. A marca convoca, desafia e celebra evolução real.",
+      "Firme, objetiva e motivadora. A fala chama para ação, responsabilidade e evolução visível.",
     contentDirection:
-      "Conteúdos sobre desafios, metas, bastidores de disciplina, viradas, resultados, planos de ação e superação de bloqueios.",
+      "Conteúdos sobre metas, desafios, disciplina, viradas, resultados, planos de ação e superação de bloqueios.",
+    positioningDirection:
+      "Posicione a marca como uma força de execução para quem precisa sair da intenção e sustentar movimento.",
     pointOfAttention:
-      "Cuidado com dureza excessiva, pressão constante ou narrativa de performance sem humanidade. A força precisa ser sustentável.",
+      "Cuidado com pressão excessiva. Força sem humanidade pode afastar quem ainda precisa de segurança para agir.",
     positioningAdvice:
-      "Use o Herói para mostrar transformação por ação. Seja a marca que tira a pessoa da intenção e a conduz para execução com coragem.",
+      "Na marca pessoal, o Herói aparece em narrativas de conquista, rotina, decisão, consistência e provas de transformação.",
+    nextStep:
+      "Mostre o caminho de ação em etapas. Sua marca fica mais forte quando transforma coragem em plano executável.",
     shortDescription:
-      "O Herói posiciona a marca como força de movimento. Ele atrai quem deseja coragem, resultado, conquista e superação."
+      "O Herói mostra uma marca que inspira coragem, ação e superação para chegar a um resultado mais alto."
   },
   "fora-da-lei": {
     id: "fora-da-lei",
     name: "Fora da Lei",
-    essence: "ruptura, provocação, independência e coragem para desafiar padrões.",
+    essence: "ruptura, provocação e coragem para desafiar o óbvio.",
     brandStrength:
-      "Diferencia a marca com força, cria contraste no mercado e atrai pessoas cansadas do óbvio.",
+      "A marca cria contraste no mercado e atrai pessoas cansadas de discursos repetidos.",
     communicationStyle:
-      "Provocativa, direta, magnética e sem reverência ao senso comum. A marca questiona, tensiona e reposiciona conversas.",
+      "Provocativa, direta e inteligente. A fala precisa questionar padrões e defender uma nova forma de enxergar o problema.",
     contentDirection:
-      "Conteúdos de opinião, quebras de crença, contrapontos ao mercado, verdades desconfortáveis e novas leituras sobre velhos problemas.",
+      "Conteúdos de opinião, quebras de crença, contrapontos ao mercado, verdades desconfortáveis e provocações com proposta.",
+    positioningDirection:
+      "Posicione a marca como uma voz que rompe padrões antigos e apresenta um novo critério de escolha.",
     pointOfAttention:
-      "Evite rebeldia performática, agressividade gratuita ou crítica sem proposta. Ruptura premium precisa ter inteligência e direção.",
+      "Cuidado com rebeldia sem direção. Provocar só funciona quando existe uma tese forte por trás.",
     positioningAdvice:
-      "Use esse arquétipo para criar contraste. Mostre o que sua marca não aceita mais e qual novo padrão você sustenta no lugar.",
+      "Na marca pessoal, o Fora da Lei aparece em opiniões marcantes, posicionamentos firmes e coragem para dizer o que o mercado evita.",
+    nextStep:
+      "Defina qual padrão você combate e qual padrão melhor você coloca no lugar. Essa é a base da sua diferenciação.",
     shortDescription:
-      "O Fora da Lei diferencia pela ruptura. Sua marca tende a atrair quando desafia o óbvio e revela uma forma mais ousada de pensar."
+      "O Fora da Lei revela uma marca que se diferencia pela coragem de questionar, romper e reposicionar conversas."
   },
   mago: {
     id: "mago",
     name: "Mago",
-    essence: "transformação, visão, alquimia, encantamento e mudança de percepção.",
+    essence: "transformação, visão de futuro e mudança de percepção.",
     brandStrength:
-      "Cria fascínio e faz a audiência acreditar em uma mudança mais profunda do que a solução aparente.",
+      "A marca cria fascínio porque mostra uma possibilidade maior do que a solução aparente.",
     communicationStyle:
-      "Simbólica, estratégica, envolvente e visionária. A marca revela conexões invisíveis e conduz a pessoa a enxergar de outro modo.",
+      "Visionária, simbólica e envolvente. A fala revela conexões invisíveis e ajuda a pessoa a se ver de outro jeito.",
     contentDirection:
-      "Conteúdos sobre transformação, antes e depois, identidade, desejo, percepção, rituais de decisão e mudança de mentalidade.",
+      "Conteúdos sobre transformação, antes e depois, identidade, percepção, desejo, visão de futuro e mudança de mentalidade.",
+    positioningDirection:
+      "Posicione a marca como catalisadora de transformação para quem quer mudar não só uma ação, mas a forma de se perceber.",
     pointOfAttention:
-      "Cuidado com abstração demais. O encantamento precisa encontrar método, prova e aplicabilidade.",
+      "Cuidado com abstração demais. O encantamento precisa ser sustentado por método, prova e clareza.",
     positioningAdvice:
-      "Posicione sua marca como uma catalisadora de transformação. Mostre o mecanismo por trás da mudança para que o fascínio se converta em confiança.",
+      "Na marca pessoal, o Mago aparece em narrativas de transformação, símbolos, rituais, linguagem de mudança e promessas profundas.",
+    nextStep:
+      "Mostre o mecanismo da transformação. Quando o público entende como a mudança acontece, o fascínio vira confiança.",
     shortDescription:
-      "O Mago transforma percepção em desejo. Sua marca tende a se destacar quando faz a audiência enxergar uma nova possibilidade para si."
+      "O Mago mostra uma marca que transforma percepção em desejo e conduz a audiência para uma nova possibilidade."
   },
   "cara-comum": {
     id: "cara-comum",
     name: "Cara Comum",
-    essence: "pertencimento, humanidade, proximidade e confiança cotidiana.",
+    essence: "proximidade, pertencimento e verdade cotidiana.",
     brandStrength:
-      "Reduz distância, cria identificação e faz a audiência sentir que existe espaço para ela naquela conversa.",
+      "A marca cria identificação, reduz distância e faz a audiência sentir que aquela conversa também é para ela.",
     communicationStyle:
-      "Humana, acessível, honesta e sem pedestal. A marca conversa com verdade e aproxima sem perder intenção.",
+      "Humana, simples e honesta. A fala precisa soar próxima sem perder intenção e autoridade.",
     contentDirection:
-      "Conteúdos de bastidores reais, aprendizados práticos, conversas francas, dilemas cotidianos e histórias de identificação.",
+      "Conteúdos com bastidores reais, aprendizados práticos, conversas francas, dilemas comuns e histórias de identificação.",
+    positioningDirection:
+      "Posicione a marca como uma presença acessível e confiável para quem quer evolução sem pedestal.",
     pointOfAttention:
-      "Evite diluir sua autoridade para parecer acessível. Proximidade não precisa significar falta de sofisticação.",
+      "Cuidado para não diminuir sua autoridade para parecer próxima. Acessibilidade também pode ser premium.",
     positioningAdvice:
-      "Use esse arquétipo para humanizar sua autoridade. Mostre presença real, linguagem clara e uma promessa que cabe na vida do público.",
+      "Na marca pessoal, o Cara Comum aparece em linguagem direta, bastidores reais, vulnerabilidade bem dosada e senso de comunidade.",
+    nextStep:
+      "Transforme sua proximidade em confiança estruturada. Mostre que você entende a realidade da cliente e sabe conduzi-la.",
     shortDescription:
-      "O Cara Comum aproxima pela identificação. Sua marca tende a criar confiança quando conversa com humanidade e realidade."
+      "O Cara Comum revela uma marca que cria confiança pela identificação, pela humanidade e pela conversa sem distância."
   },
   amante: {
     id: "amante",
     name: "Amante",
-    essence: "desejo, beleza, sensibilidade, intimidade e conexão emocional.",
+    essence: "desejo, beleza, sensibilidade e conexão emocional.",
     brandStrength:
-      "Cria magnetismo, eleva a percepção estética e transforma relação em desejo de aproximação.",
+      "A marca aumenta percepção de valor criando uma experiência desejável, sensorial e emocionalmente próxima.",
     communicationStyle:
-      "Sensorial, refinada, emocional e envolvente. A marca fala ao desejo sem perder estratégia.",
+      "Refinada, sensível e envolvente. A fala precisa criar intimidade, desejo e vontade de aproximação.",
     contentDirection:
-      "Conteúdos sobre estética, experiência, desejo, identidade, relações, escolhas sensíveis e detalhes que aumentam percepção de valor.",
+      "Conteúdos sobre estética, experiência, desejo, identidade, detalhes, relações e escolhas que elevam percepção de valor.",
+    positioningDirection:
+      "Posicione a marca como uma experiência que a pessoa deseja viver, não apenas como uma solução que ela precisa comprar.",
     pointOfAttention:
-      "Cuidado para não depender apenas de beleza ou sedução. O desejo precisa sustentar uma promessa clara e uma entrega consistente.",
+      "Cuidado para depender só de beleza. Desejo precisa vir junto de promessa clara, entrega consistente e maturidade estratégica.",
     positioningAdvice:
-      "Posicione sua marca como uma experiência desejável. Trabalhe linguagem, visual, ritmo e narrativa para fazer a audiência querer estar mais perto.",
+      "Na marca pessoal, o Amante aparece em visual refinado, linguagem sensorial, presença magnética e cuidado com os detalhes.",
+    nextStep:
+      "Conecte estética a estratégia. Mostre por que a experiência que você cria muda a forma como a cliente se percebe.",
     shortDescription:
-      "O Amante conduz pela estética e pela conexão. Sua marca tende a atrair quando cria desejo, intimidade e percepção sensorial de valor."
+      "O Amante revela uma marca que atrai pelo desejo, pela estética e pela conexão emocional."
   },
   "bobo-da-corte": {
     id: "bobo-da-corte",
     name: "Bobo da Corte",
-    essence: "leveza, prazer, humor inteligente, presença e espontaneidade.",
+    essence: "leveza, prazer, espontaneidade e humor inteligente.",
     brandStrength:
-      "Quebra tensão, gera lembrança e torna temas densos mais acessíveis sem perder personalidade.",
+      "A marca cria lembrança e aproxima temas difíceis com mais prazer, presença e personalidade.",
     communicationStyle:
-      "Viva, espirituosa, leve e sagaz. A marca sabe entreter, provocar riso e criar conexão pelo prazer da conversa.",
+      "Viva, leve e sagaz. A fala precisa divertir sem perder a tese e tornar a conversa mais memorável.",
     contentDirection:
-      "Conteúdos com humor, analogias, bastidores espontâneos, comentários culturais, quebras de expectativa e linguagem memorável.",
+      "Conteúdos com humor, comentários rápidos, quebras de expectativa, bastidores espontâneos e analogias simples.",
+    positioningDirection:
+      "Posicione a marca como uma experiência leve e inteligente para quem quer aprender ou decidir sem peso excessivo.",
     pointOfAttention:
-      "Evite parecer inconsequente, rasa ou incapaz de sustentar seriedade. Leveza premium precisa de inteligência editorial.",
+      "Cuidado para parecer rasa ou inconsequente. A leveza precisa carregar uma ideia forte.",
     positioningAdvice:
-      "Use o Bobo da Corte para criar memorabilidade. Traga prazer à experiência, mas mantenha uma tese clara por trás da leveza.",
+      "Na marca pessoal, o Bobo da Corte aparece em carisma, espontaneidade, timing, humor refinado e capacidade de simplificar tensões.",
+    nextStep:
+      "Use a leveza como porta de entrada e a estratégia como sustentação. O humor deve reforçar sua autoridade, não substituir.",
     shortDescription:
-      "O Bobo da Corte atrai pela leveza inteligente. Sua marca tende a se destacar quando torna a comunicação mais viva, prazerosa e memorável."
+      "O Bobo da Corte mostra uma marca que atrai pela leveza inteligente, pela presença viva e pela memorabilidade."
   },
   cuidador: {
     id: "cuidador",
     name: "Cuidador",
-    essence: "proteção, generosidade, suporte, responsabilidade e orientação segura.",
+    essence: "acolhimento, proteção e responsabilidade na condução.",
     brandStrength:
-      "Cria confiança profunda, reduz medo e faz a audiência sentir que será acompanhada com responsabilidade.",
+      "A marca cria confiança profunda porque a audiência sente que será orientada com cuidado e segurança.",
     communicationStyle:
-      "Acolhedora, firme, paciente e cuidadosa. A marca escuta a dor sem explorar fragilidades.",
+      "Acolhedora, paciente e firme. A fala reconhece a dor sem explorar fragilidade.",
     contentDirection:
-      "Conteúdos sobre orientação, prevenção de erros, acolhimento, processos seguros, suporte, responsabilidade e tomada de decisão consciente.",
+      "Conteúdos sobre orientação, erros a evitar, segurança, suporte, cuidado com processos e decisões mais conscientes.",
+    positioningDirection:
+      "Posicione a marca como uma presença segura para quem precisa ser conduzida com responsabilidade e clareza.",
     pointOfAttention:
-      "Cuidado para assumir peso demais, salvar quem não quer agir ou suavizar excessivamente sua autoridade.",
+      "Cuidado para assumir peso demais. Cuidar não significa salvar quem não quer se mover.",
     positioningAdvice:
-      "Posicione sua marca como uma presença confiável. Mostre cuidado com limites, direção e responsabilidade para não cair em excesso de proteção.",
+      "Na marca pessoal, o Cuidador aparece em escuta, suporte, didática calma, limites claros e promessa de acompanhamento sério.",
+    nextStep:
+      "Crie limites para o seu cuidado. Sua autoridade cresce quando acolhe e conduz sem se apagar.",
     shortDescription:
-      "O Cuidador sustenta pela confiança. Sua marca tende a atrair quando combina acolhimento, responsabilidade e orientação segura."
+      "O Cuidador revela uma marca que gera confiança por acolhimento, responsabilidade e orientação segura."
   },
   criador: {
     id: "criador",
     name: "Criador",
-    essence: "autoria, originalidade, expressão, construção e visão estética.",
+    essence: "autoria, originalidade e construção de algo com assinatura.",
     brandStrength:
-      "Transforma ideias em experiências próprias, aumenta percepção de exclusividade e fortalece identidade autoral.",
+      "A marca ganha valor por ter linguagem própria, visão estética e capacidade de transformar ideias em experiência.",
     communicationStyle:
-      "Imaginativa, refinada, visual e conceitual. A marca comunica processo, repertório e assinatura.",
+      "Autoral, visual e conceitual. A fala mostra repertório, processo e escolhas conscientes.",
     contentDirection:
-      "Conteúdos sobre bastidores, referências, processo criativo, desenvolvimento de método, escolhas visuais, produtos e construção de linguagem própria.",
+      "Conteúdos sobre bastidores, referências, criação de método, processo criativo, conceitos, estética e construção de linguagem.",
+    positioningDirection:
+      "Posicione a marca como uma assinatura própria, reconhecida pela forma única de pensar, criar e entregar.",
     pointOfAttention:
-      "Evite perfeccionismo, excesso de elaboração ou dificuldade de finalizar. A autoria precisa chegar ao mercado.",
+      "Cuidado com perfeccionismo. A marca precisa chegar ao mercado, não ficar presa em elaboração infinita.",
     positioningAdvice:
-      "Use o Criador para evidenciar sua assinatura. Mostre como você pensa, constrói e transforma repertório em algo reconhecível.",
+      "Na marca pessoal, o Criador aparece em identidade visual marcante, ideias originais, produtos autorais e bastidores de criação.",
+    nextStep:
+      "Nomeie sua assinatura. Mostre o que torna sua forma de criar diferente e por que isso aumenta valor percebido.",
     shortDescription:
-      "O Criador posiciona pela autoria. Sua marca tende a ganhar valor quando transforma ideias, estética e método em uma assinatura própria."
+      "O Criador mostra uma marca que se diferencia pela autoria, pela estética e pela capacidade de construir conceitos originais."
   },
   governante: {
     id: "governante",
     name: "Governante",
-    essence: "liderança, excelência, estrutura, autoridade e alto padrão.",
+    essence: "liderança, excelência e alto padrão de decisão.",
     brandStrength:
-      "Eleva percepção de valor, cria confiança por comando e sustenta uma imagem de referência no mercado.",
+      "A marca transmite autoridade, direção e valor elevado porque sabe qual território lidera.",
     communicationStyle:
-      "Segura, refinada, criteriosa e diretiva. A marca fala com autoridade e deixa claro o padrão que lidera.",
+      "Segura, refinada e diretiva. A fala deixa claros os critérios, o padrão e a visão de liderança.",
     contentDirection:
-      "Conteúdos sobre liderança, critérios de decisão, bastidores de excelência, posicionamento, autoridade, visão de mercado e estrutura.",
+      "Conteúdos sobre liderança, critérios de escolha, posicionamento, mercado, excelência, estrutura e tomada de decisão.",
+    positioningDirection:
+      "Posicione a marca como referência para quem busca direção, padrão elevado e visão madura de crescimento.",
     pointOfAttention:
-      "Cuidado com rigidez, distanciamento ou excesso de controle. Autoridade premium também precisa gerar conexão.",
+      "Cuidado com rigidez ou distância emocional. Autoridade premium também precisa criar conexão.",
     positioningAdvice:
-      "Use o Governante para afirmar território. Mostre padrão, método, direção e uma visão madura sobre o mercado que você lidera.",
+      "Na marca pessoal, o Governante aparece em presença segura, estética sofisticada, direção firme e autoridade reconhecida.",
+    nextStep:
+      "Defina o território que você lidera. Sua marca precisa comunicar padrão, método e visão com precisão.",
     shortDescription:
-      "O Governante lidera por autoridade e estrutura. Sua marca tende a atrair quando transmite excelência, direção e alto padrão."
+      "O Governante revela uma marca que lidera por autoridade, estrutura e percepção de alto padrão."
   }
 };
 
@@ -290,253 +331,181 @@ export const questions: Question[] = [
   {
     id: 1,
     archetype: "inocente",
-    dimension: "atracao",
-    statement:
-      "Eu quero que minha marca transmita leveza, confiança e uma sensação de recomeço possível."
+    statement: "Eu gosto que minha marca transmita leveza, confiança e simplicidade."
   },
   {
     id: 2,
     archetype: "inocente",
-    dimension: "decisao",
-    statement:
-      "Na hora de decidir, costumo buscar o caminho mais claro, simples e honesto."
+    statement: "Eu prefiro explicar as coisas de um jeito claro, direto e sem complicar."
   },
   {
     id: 3,
     archetype: "inocente",
-    dimension: "conteudo",
-    statement:
-      "Meu conteúdo funciona melhor quando inspira esperança, transparência e uma visão positiva do futuro."
+    statement: "Eu quero que as pessoas se sintam mais tranquilas depois de consumir meu conteúdo."
   },
   {
     id: 4,
     archetype: "explorador",
-    dimension: "posicionamento",
-    statement:
-      "Eu me sinto atraída por posicionamentos que falam de liberdade, autonomia e descoberta."
+    statement: "Eu gosto de falar sobre liberdade, escolhas e novos caminhos."
   },
   {
     id: 5,
     archetype: "explorador",
-    dimension: "decisao",
-    statement:
-      "Prefiro tomar decisões testando caminhos novos, mesmo antes de ter todas as garantias."
+    statement: "Eu me sinto bem quando posso testar ideias novas sem seguir uma fórmula pronta."
   },
   {
     id: 6,
     archetype: "explorador",
-    dimension: "comunicacao",
-    statement:
-      "Minha comunicação ganha força quando convida as pessoas a sair do piloto automático."
+    statement: "Eu quero que minha marca incentive as pessoas a saírem do automático."
   },
   {
     id: 7,
     archetype: "sabio",
-    dimension: "comunicacao",
-    statement:
-      "Eu gosto de conduzir as pessoas com clareza, método e conhecimento profundo."
+    statement: "Eu prefiro ensinar com profundidade, clareza e método."
   },
   {
     id: 8,
     archetype: "sabio",
-    dimension: "decisao",
-    statement:
-      "Antes de me posicionar, preciso entender o contexto, pesquisar e organizar argumentos."
+    statement: "Antes de me posicionar, eu gosto de entender bem o assunto."
   },
   {
     id: 9,
     archetype: "sabio",
-    dimension: "conteudo",
-    statement:
-      "Meu conteúdo tende a educar, explicar conceitos e criar autoridade intelectual."
+    statement: "Eu gosto de criar conteúdos que ajudam as pessoas a pensar melhor."
   },
   {
     id: 10,
     archetype: "heroi",
-    dimension: "atracao",
-    statement:
-      "Eu me sinto mais forte quando minha marca inspira conquista, superação e ação."
+    statement: "Eu gosto de inspirar ação, coragem e superação."
   },
   {
     id: 11,
     archetype: "heroi",
-    dimension: "decisao",
-    statement:
-      "Gosto de decidir com foco em metas, performance e evolução visível."
+    statement: "Eu me sinto motivada quando tenho uma meta clara para conquistar."
   },
   {
     id: 12,
     archetype: "heroi",
-    dimension: "comunicacao",
-    statement:
-      "Minha comunicação chama as pessoas para agir, vencer limites e sustentar disciplina."
+    statement: "Eu quero que minha marca ajude as pessoas a vencerem seus próprios limites."
   },
   {
     id: 13,
     archetype: "fora-da-lei",
-    dimension: "posicionamento",
-    statement:
-      "Eu gosto de quebrar padrões, provocar o mercado e desafiar o óbvio."
+    statement: "Eu tenho vontade de quebrar padrões e provocar o mercado."
   },
   {
     id: 14,
     archetype: "fora-da-lei",
-    dimension: "comportamento",
-    statement:
-      "Quando algo parece engessado, minha tendência é questionar a regra e propor outra lógica."
+    statement: "Eu não gosto de repetir discursos só porque todo mundo está falando igual."
   },
   {
     id: 15,
     archetype: "fora-da-lei",
-    dimension: "conteudo",
-    statement:
-      "Meu conteúdo ganha força quando confronta verdades desconfortáveis e reposiciona conversas do mercado."
+    statement: "Eu gosto de defender ideias fortes, mesmo quando elas incomodam um pouco."
   },
   {
     id: 16,
     archetype: "mago",
-    dimension: "atracao",
-    statement:
-      "Eu quero que minha marca desperte transformação, fascínio e uma sensação de possibilidade maior."
+    statement: "Eu gosto de mostrar possibilidades, transformação e visão de futuro."
   },
   {
     id: 17,
     archetype: "mago",
-    dimension: "comportamento",
-    statement:
-      "Costumo enxergar conexões invisíveis entre desejo, percepção e mudança."
+    statement: "Eu quero que minha marca faça as pessoas enxergarem a si mesmas de outro jeito."
   },
   {
     id: 18,
     archetype: "mago",
-    dimension: "comunicacao",
-    statement:
-      "Minha comunicação funciona quando revela um antes e depois profundo."
+    statement: "Eu gosto de falar sobre mudanças profundas, identidade e desejo."
   },
   {
     id: 19,
     archetype: "cara-comum",
-    dimension: "atracao",
-    statement:
-      "Eu valorizo marcas que aproximam, incluem e fazem a pessoa se sentir pertencente."
+    statement: "Eu prefiro uma comunicação humana, próxima e fácil de entender."
   },
   {
     id: 20,
     archetype: "cara-comum",
-    dimension: "decisao",
-    statement:
-      "Prefiro decisões práticas, humanas e conectadas com a realidade do público."
+    statement: "Eu gosto quando meu conteúdo faz as pessoas pensarem: isso também acontece comigo."
   },
   {
     id: 21,
     archetype: "cara-comum",
-    dimension: "conteudo",
-    statement:
-      "Meu conteúdo flui melhor quando conversa sem pedestal, com verdade e simplicidade."
+    statement: "Eu quero que minha marca pareça acessível, real e sem pedestal."
   },
   {
     id: 22,
     archetype: "amante",
-    dimension: "atracao",
-    statement:
-      "Eu prefiro construir uma marca que transmita desejo, estética, sensibilidade e conexão emocional."
+    statement: "Eu gosto que minha marca transmita beleza, desejo e conexão emocional."
   },
   {
     id: 23,
     archetype: "amante",
-    dimension: "decisao",
-    statement:
-      "Minhas decisões consideram beleza, experiência, vínculo e impacto sensorial."
+    statement: "Eu presto atenção na estética, nos detalhes e na experiência que minha marca cria."
   },
   {
     id: 24,
     archetype: "amante",
-    dimension: "comunicacao",
-    statement:
-      "Meu conteúdo ganha força quando cria intimidade, identificação e vontade de estar perto."
+    statement: "Eu quero que meu conteúdo gere vontade de estar mais perto de mim."
   },
   {
     id: 25,
     archetype: "bobo-da-corte",
-    dimension: "comunicacao",
-    statement:
-      "Eu gosto de trazer leveza, humor inteligente e espontaneidade para a comunicação."
+    statement: "Eu gosto de deixar a comunicação mais leve, divertida e espontânea."
   },
   {
     id: 26,
     archetype: "bobo-da-corte",
-    dimension: "decisao",
-    statement:
-      "Quando decido, costumo valorizar prazer, timing e presença no momento."
+    statement: "Eu gosto quando meu conteúdo faz as pessoas sorrirem ou relaxarem."
   },
   {
     id: 27,
     archetype: "bobo-da-corte",
-    dimension: "conteudo",
-    statement:
-      "Meu conteúdo se destaca quando entretém, alivia tensões e torna assuntos densos mais acessíveis."
+    statement: "Eu consigo falar de assuntos sérios de um jeito mais leve."
   },
   {
     id: 28,
     archetype: "cuidador",
-    dimension: "comportamento",
-    statement:
-      "Eu me sinto realizada quando minha marca protege, orienta e sustenta o crescimento das pessoas."
+    statement: "Eu gosto de acolher, orientar e fazer as pessoas se sentirem seguras."
   },
   {
     id: 29,
     archetype: "cuidador",
-    dimension: "decisao",
-    statement:
-      "Costumo decidir considerando impacto, segurança e o bem-estar de quem confia em mim."
+    statement: "Eu penso bastante no impacto que minha fala pode causar nas pessoas."
   },
   {
     id: 30,
     archetype: "cuidador",
-    dimension: "comunicacao",
-    statement:
-      "Minha comunicação acolhe dores reais e oferece direção com responsabilidade."
+    statement: "Eu quero que minha marca seja vista como confiável e responsável."
   },
   {
     id: 31,
     archetype: "criador",
-    dimension: "comportamento",
-    statement:
-      "Eu gosto de transformar ideias em métodos, estéticas, produtos ou experiências autorais."
+    statement: "Eu gosto de criar experiências, conceitos e ideias originais."
   },
   {
     id: 32,
     archetype: "criador",
-    dimension: "decisao",
-    statement:
-      "Minhas decisões passam pela originalidade, pela coerência visual e pela qualidade da execução."
+    statement: "Eu quero que minha marca tenha uma identidade própria e reconhecível."
   },
   {
     id: 33,
     archetype: "criador",
-    dimension: "conteudo",
-    statement:
-      "Meu conteúdo se destaca quando mostra processos, bastidores, referências e construção."
+    statement: "Eu gosto de mostrar bastidores, processos e referências criativas."
   },
   {
     id: 34,
     archetype: "governante",
-    dimension: "posicionamento",
-    statement:
-      "Eu quero que minha marca seja vista como referência, autoridade e liderança."
+    statement: "Eu quero que minha marca seja vista como referência e liderança."
   },
   {
     id: 35,
     archetype: "governante",
-    dimension: "decisao",
-    statement:
-      "Tomo decisões buscando estrutura, excelência, controle e posicionamento de alto nível."
+    statement: "Eu gosto de transmitir segurança, critério e alto padrão."
   },
   {
     id: 36,
     archetype: "governante",
-    dimension: "comunicacao",
-    statement:
-      "Minha comunicação transmite direção, critério, sofisticação e senso de comando."
+    statement: "Eu quero que minha comunicação passe autoridade e direção."
   }
 ];

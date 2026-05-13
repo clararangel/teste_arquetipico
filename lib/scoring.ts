@@ -1,6 +1,7 @@
 import {
   Answer,
   ArchetypeKey,
+  RankedArchetype,
   Result,
   archetypeOrder,
   archetypes,
@@ -38,18 +39,14 @@ export function calculateResult(answers: Answer): Result {
     dominant,
     secondary,
     tertiary,
-    strategicCombination: buildStrategicCombination(
-      dominant.archetype.name,
-      secondary.archetype.name,
-      tertiary.archetype.name
-    )
+    strategicCombination: buildStrategicCombination(dominant, secondary, tertiary)
   };
 }
 
 function buildStrategicCombination(
-  dominantName: string,
-  secondaryName: string,
-  tertiaryName: string
+  dominant: RankedArchetype,
+  secondary: RankedArchetype,
+  tertiary: RankedArchetype
 ) {
-  return `A combinação ${dominantName}, ${secondaryName} e ${tertiaryName} indica uma marca que deve liderar com a força do arquétipo dominante, usar o secundário como camada de relacionamento e deixar o terciário como assinatura de diferenciação. Na prática, o posicionamento fica mais forte quando a promessa principal é clara, a comunicação preserva nuances emocionais e o conteúdo prova maturidade estratégica sem perder desejo.`;
+  return `A combinação ${dominant.archetype.name}, ${secondary.archetype.name} e ${tertiary.archetype.name} mostra uma marca que deve liderar com ${dominant.archetype.essence} O arquétipo ${secondary.archetype.name} funciona como a camada de relação: ele ajusta o tom, aproxima a audiência e deixa a mensagem mais completa. Já o ${tertiary.archetype.name} aparece como assinatura de diferenciação, dando nuance ao conteúdo e ao posicionamento. Na prática, sua comunicação fica mais forte quando a promessa principal é clara, o tom emocional é intencional e cada conteúdo reforça a percepção de valor que você quer ocupar.`;
 }
