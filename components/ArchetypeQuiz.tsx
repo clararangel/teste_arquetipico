@@ -110,6 +110,9 @@ export function ArchetypeQuiz() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [leadData, setLeadData] = useState<LeadData>(initialLeadData);
   const [answers, setAnswers] = useState<Answer>({});
+  const [pendingSelectedValue, setPendingSelectedValue] = useState<number | null>(
+    null
+  );
   const [isLoaded, setIsLoaded] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const [shareStatus, setShareStatus] = useState("");
@@ -185,6 +188,10 @@ export function ArchetypeQuiz() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    setPendingSelectedValue(null);
+  }, [currentQuestionIndex]);
 
   function clearAutoAdvance() {
     if (advanceTimer.current) {
@@ -269,6 +276,7 @@ export function ArchetypeQuiz() {
   }
 
   function selectAnswer(value: number) {
+    setPendingSelectedValue(value);
     setAnswers((currentAnswers) => ({
       ...currentAnswers,
       [currentQuestion.id]: value
@@ -278,6 +286,7 @@ export function ArchetypeQuiz() {
 
     advanceTimer.current = window.setTimeout(() => {
       advanceTimer.current = null;
+      setPendingSelectedValue(null);
 
       if (currentQuestionIndex === questions.length - 1) {
         setStep("result");
@@ -318,22 +327,27 @@ export function ArchetypeQuiz() {
   }
 
   async function shareResult() {
-    const firstName = getFirstName(leadData.fullName);
-    const shareText = `${firstName ? `${firstName}, ` : ""}meu arquétipo principal no Teste de Arquétipo é ${result.dominant.archetype.name}. Secundário: ${result.secondary.archetype.name}. Terciário: ${result.tertiary.archetype.name}.`;
+    const testLink = window.location.origin || window.location.href;
+    const shareText = `Oi, tudo bem? Acabei de fazer o meu Teste de Arquétipo e meu resultado foi:
+
+Arquétipo principal: ${result.dominant.archetype.name}
+Arquétipo secundário: ${result.secondary.archetype.name}
+Arquétipo terciário: ${result.tertiary.archetype.name}
+
+Faz o seu também: ${testLink}`;
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "Meu resultado no Teste de Arquétipo",
-          text: shareText,
-          url: window.location.href
+          title: "Teste de Arquétipo",
+          text: shareText
         });
         setShareStatus("Resultado compartilhado.");
         return;
       }
 
       await navigator.clipboard.writeText(shareText);
-      setShareStatus("Resultado copiado para compartilhar.");
+      setShareStatus("Mensagem copiada.");
     } catch {
       setShareStatus("Não foi possível compartilhar agora.");
     }
@@ -377,6 +391,7 @@ export function ArchetypeQuiz() {
             currentQuestionIndex={currentQuestionIndex}
             onSelectAnswer={selectAnswer}
             onSkipToNext={goToNextQuestion}
+            pendingSelectedValue={pendingSelectedValue}
             question={currentQuestion}
             selectedValue={selectedValue}
           />
@@ -466,18 +481,21 @@ function InstructionsStep({ onStart }: { onStart: () => void }) {
   return (
     <Panel className="max-w-3xl">
       <p className="eyebrow">Antes de começar</p>
-      <h1 className="screen-title">
-        Responda com sinceridade o quanto cada afirmação representa você, sua
-        marca e sua forma de se posicionar.
-      </h1>
-
-      <div className="scale-grid mt-8">
-        {likertOptions.map((option) => (
-          <div className="scale-item" key={option.value}>
-            <span>{option.value}</span>
-            <p>{option.label}</p>
-          </div>
-        ))}
+      <div className="instructions-copy">
+        <p>
+          Antes de começar, responda com sinceridade o quanto cada afirmação
+          representa você, sua marca e sua forma de se posicionar.
+        </p>
+        <p>
+          Durante o teste, você vai escolher uma nota de 0 a 5 para cada
+          afirmação:
+        </p>
+        <p>0 significa que não tem nada a ver com você.</p>
+        <p>5 significa que tem tudo a ver com você.</p>
+        <p>
+          Não existe resposta certa ou errada. O mais importante é marcar o que
+          representa o seu comportamento hoje.
+        </p>
       </div>
 
       <button className="champagne-button mt-7" onClick={onStart} type="button">
@@ -566,12 +584,14 @@ function QuizStep({
   currentQuestionIndex,
   onSelectAnswer,
   onSkipToNext,
+  pendingSelectedValue,
   question,
   selectedValue
 }: {
   currentQuestionIndex: number;
   onSelectAnswer: (value: number) => void;
   onSkipToNext: () => void;
+  pendingSelectedValue: number | null;
   question: (typeof questions)[number];
   selectedValue?: number;
 }) {
@@ -585,9 +605,15 @@ function QuizStep({
       <div className="answer-grid mt-9">
         {likertOptions.map((option) => (
           <button
-            className={`answer-option ${selectedValue === option.value ? "is-selected" : ""}`}
+            className={`answer-option ${
+              pendingSelectedValue === option.value ||
+              (pendingSelectedValue === null && selectedValue === option.value)
+                ? "is-selected"
+                : ""
+            }`}
             key={option.value}
             onClick={() => onSelectAnswer(option.value)}
+            onPointerUp={(event) => event.currentTarget.blur()}
             type="button"
           >
             <span>{option.value}</span>
@@ -677,8 +703,8 @@ function ResultStep({
             </a>
             <a
               className="outline-button"
-              href="https://www.instagram.com/clararangelmkt"
-              rel="noreferrer"
+              href="https://www.instagram.com/souclararangel/"
+              rel="noopener noreferrer"
               target="_blank"
             >
               Falar com Clara no Instagram

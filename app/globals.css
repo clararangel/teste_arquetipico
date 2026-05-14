@@ -151,6 +151,21 @@ button:disabled {
   line-height: 1.04;
 }
 
+.instructions-copy {
+  margin-top: 22px;
+  color: rgba(255, 246, 232, 0.86);
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
+  line-height: 1.72;
+}
+
+.instructions-copy p {
+  margin: 0;
+}
+
+.instructions-copy p + p {
+  margin-top: 16px;
+}
+
 .scale-grid {
   display: grid;
   gap: 10px;
