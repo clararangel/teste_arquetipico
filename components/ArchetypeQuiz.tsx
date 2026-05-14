@@ -34,7 +34,25 @@ type StoredQuizState = {
   result?: Result | null;
 };
 
+type LeadSubmissionPayload = {
+  nomeCompleto: string;
+  email: string;
+  telefone: string;
+  dataNascimento: string;
+  genero: string;
+  areaAtuacao: string;
+  rendaMensal: string;
+  arquetipoPrincipal: string;
+  arquetipoSecundario: string;
+  arquetipoTerciario: string;
+  origem: "Teste de Arquétipos";
+  createdAt: string;
+};
+
+type LeadSubmissionStatus = "idle" | "saving" | "success" | "error";
+
 const STORAGE_KEY = "teste-dos-arquetipos-clara-rangel";
+const SUBMISSION_STORAGE_KEY = `${STORAGE_KEY}-lead-submission`;
 
 const initialLeadData: LeadData = {
   fullName: "",
@@ -116,11 +134,14 @@ export function ArchetypeQuiz() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const [shareStatus, setShareStatus] = useState("");
+  const [leadSubmissionStatus, setLeadSubmissionStatus] =
+    useState<LeadSubmissionStatus>("idle");
   const advanceTimer = useRef<number | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
   const selectedValue = answers[currentQuestion.id];
   const answeredCount = Object.keys(answers).length;
+  const resultIsReady = answeredCount === questions.length;
   const result = useMemo<Result>(() => calculateResult(answers), [answers]);
   const currentLeadField = leadFields[leadStepIndex];
   const currentLeadValue = leadData[currentLeadField.id];
@@ -192,6 +213,61 @@ export function ArchetypeQuiz() {
   useEffect(() => {
     setPendingSelectedValue(null);
   }, [currentQuestionIndex]);
+
+  useEffect(() => {
+    if (!isLoaded || step !== "result" || !resultIsReady) {
+      return;
+    }
+
+    if (window.localStorage.getItem(SUBMISSION_STORAGE_KEY)) {
+      return;
+    }
+
+    const payload = buildLeadSubmissionPayload(leadData, result);
+
+    window.localStorage.setItem(
+      SUBMISSION_STORAGE_KEY,
+      JSON.stringify({
+        attemptedAt: new Date().toISOString(),
+        email: leadData.email,
+        mainArchetype: result.dominant.archetype.name
+      })
+    );
+
+    if (!payload) {
+      setLeadSubmissionStatus("error");
+      return;
+    }
+
+    let isCancelled = false;
+    setLeadSubmissionStatus("saving");
+
+    fetch("/api/submit-lead", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Lead submission failed.");
+        }
+
+        if (!isCancelled) {
+          setLeadSubmissionStatus("success");
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setLeadSubmissionStatus("error");
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isLoaded, leadData, result, resultIsReady, step]);
 
   function clearAutoAdvance() {
     if (advanceTimer.current) {
@@ -323,7 +399,9 @@ export function ArchetypeQuiz() {
     setAnswers({});
     setValidationMessage("");
     setShareStatus("");
+    setLeadSubmissionStatus("idle");
     window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(SUBMISSION_STORAGE_KEY);
   }
 
   async function shareResult() {
@@ -353,7 +431,6 @@ Faz o seu também: ${testLink}`;
     }
   }
 
-  const resultIsReady = answeredCount === questions.length;
   const canGoBack = step !== "intro";
   const canGoNext =
     (step === "instructions" && true) ||
@@ -403,6 +480,7 @@ Faz o seu também: ${testLink}`;
             onRestart={restartFromBeginning}
             onShare={shareResult}
             result={result}
+            submissionStatus={leadSubmissionStatus}
             shareStatus={shareStatus}
           />
         ) : null}
@@ -639,12 +717,14 @@ function ResultStep({
   onRestart,
   onShare,
   result,
+  submissionStatus,
   shareStatus
 }: {
   leadData: LeadData;
   onRestart: () => void;
   onShare: () => void;
   result: Result;
+  submissionStatus: LeadSubmissionStatus;
   shareStatus: string;
 }) {
   const dominant = result.dominant.archetype;
@@ -719,6 +799,17 @@ function ResultStep({
           <button className="ghost-button" onClick={onRestart} type="button">
             Refazer teste
           </button>
+          {submissionStatus === "success" ? (
+            <p className="share-status" role="status">
+              Resultado salvo com sucesso.
+            </p>
+          ) : null}
+          {submissionStatus === "error" ? (
+            <p className="share-status" role="status">
+              Seu resultado foi gerado, mas não conseguimos salvar seus dados
+              agora.
+            </p>
+          ) : null}
           {shareStatus ? (
             <p className="share-status" role="status">
               {shareStatus}
@@ -863,6 +954,34 @@ function getAutocomplete(fieldId: LeadFieldId) {
 
 function getFirstName(fullName: string) {
   return fullName.trim().split(" ").filter(Boolean)[0] ?? "";
+}
+
+function buildLeadSubmissionPayload(
+  leadData: LeadData,
+  result: Result
+): LeadSubmissionPayload | null {
+  if (!isLeadDataComplete(leadData) || !result.dominant || !result.secondary || !result.tertiary) {
+    return null;
+  }
+
+  return {
+    nomeCompleto: leadData.fullName.trim(),
+    email: leadData.email.trim(),
+    telefone: leadData.phone.trim(),
+    dataNascimento: leadData.birthDate.trim(),
+    genero: leadData.gender.trim(),
+    areaAtuacao: leadData.area.trim(),
+    rendaMensal: leadData.income.trim(),
+    arquetipoPrincipal: result.dominant.archetype.name,
+    arquetipoSecundario: result.secondary.archetype.name,
+    arquetipoTerciario: result.tertiary.archetype.name,
+    origem: "Teste de Arquétipos",
+    createdAt: new Date().toISOString()
+  };
+}
+
+function isLeadDataComplete(leadData: LeadData) {
+  return Object.values(leadData).every((value) => value.trim().length > 0);
 }
 
 function buildTallyUrl(leadData: LeadData, result: Result) {
